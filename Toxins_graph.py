@@ -23,7 +23,6 @@ class Edge():
 class Graph():
     def __init__(self):
         self.vertices = defaultdict()
-        self.edges = defaultdict()
 
     def add_vertex(self, file):
         for record in SeqIO.parse(file, 'fasta'):
@@ -39,26 +38,38 @@ class Graph():
                             local_edge.subst.append(f"{vertex.seq[i]}{i+1}{vert.seq[i]}")
                     self.vertices[vertex].append({vert:local_edge})
 
+    # def visualize(self):
+    #     vis = Digraph(comment='Cry toxin amino acid substitution graph')
+    #     for i, j in self.vertices.items():
+    #         vis.node(i.name, label=f"{i.name}")
+    #         for num in j:
+    #             for el in num.keys():
+    #                 print(num[el].subst, '\n', i.name, el.name)
+    #                 vis.edge(i.name, el.name, label=", ".join(num[el].subst))
+    #     vis.view()
+    #     vis.save()
+
     def visualize(self):
         vis = Digraph(comment='Cry toxin amino acid substitution graph')
         for i, j in self.vertices.items():
             vis.node(i.name, label=f"{i.name}")
+            temp, eq = [], 1000
             for num in j:
-                for el in num.keys():
-                    print(num[el].subst, '\n', i.name, el.name)
-                    vis.edge(i.name, el.name, label=num[el].subst[0])
+                for el in num.items():
+                    if len(el[1].subst) < eq:
+                        temp = [el]
+                    elif len(el[1].subst) == eq:
+                        temp.append(el)
+                    eq = len(el[1].subst)
+                for item in temp:
+                    vis.edge(i.name, item[0].name, label=", ".join(item[1].subst))
         vis.view()
         vis.save()
+
 
 
 my_graph = Graph()
 my_graph.add_vertex('/home/reverend_casy/toxin_dummy_aligned.fasta')
 my_graph.adjacency_list()
-
-if list(my_graph.vertices[list(my_graph.vertices.keys())[0]][0].keys())[0].name == list(my_graph.vertices.keys())[1].name:
-    print("excessive edge!")
-
-
-
 
 my_graph.visualize()
