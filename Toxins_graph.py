@@ -20,23 +20,25 @@ class Edge():
 class graph():
     def __init__(self):
         self.vertices = list()
-        self.check = dict()
+        self.outer_set = set()
+        self.edges = set()
 
     def add_vertex(self, file):
         for record in SeqIO.parse(file, 'fasta'):
             self.vertices.append(Vertex(record.id, str(record.seq)))
 
     def acyclic(self, node1, node2):
-        print("beep")
-        if node1 in node2.out_edges.keys():
+        self.outer_set.add(node2)
+        if node1 in node2.out_edges:
             return False
         else:
             for i in node2.out_edges.keys():
-                self.acyclic(node1, i)
+                if i not in self.outer_set:
+                    self.acyclic(node1, i)
 
     def adjacency_list(self):
         for vertex in self.vertices:
-            for vert in self.vertices[self.vertices.index(vertex):]:
+            for vert in self.vertices:
                 if vert.name != vertex.name  and self.acyclic(vert, vertex) != False:
                     local_edge = Edge(vertex, vert)
                     for i in range(0, len(vertex.seq)):
@@ -54,7 +56,7 @@ class graph():
                         vert.in_edges[vertex] = local_edge
 
     def visualize(self):
-        vis = Digraph(comment='Cry toxin amino acid substitution graph')
+        vis = Digraph(comment='Cry toxin amino acid substitution graph', strict=True)
         for i in self.vertices:
             vis.node(i.name, label=f"{i.name}")
             for item in i.out_edges.items():
