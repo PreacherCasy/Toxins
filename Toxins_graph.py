@@ -39,7 +39,7 @@ class graph():
     def adjacency_list(self):
         for vertex in self.vertices:
             for vert in self.vertices:
-                if vert.name != vertex.name  and self.acyclic(vert, vertex) != False:
+                if vert.name != vertex.name  and self.acyclic(vert, vertex) != False and vertex not in vert.out_edges.keys():
                     local_edge = Edge(vertex, vert)
                     for i in range(0, len(vertex.seq)):
                         if vertex.seq[i] != vert.seq[i]:
