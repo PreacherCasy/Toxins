@@ -28,37 +28,45 @@ class graph():
         for record in SeqIO.parse(file, 'fasta'):
             self.vertices[(Vertex(record.id, str(record.seq)))] = []
 
-    def adjacency_list(self, k):
+    def adjacency_list(self):
         for vertex in self.vertices.keys():
+
             for vert in list(self.vertices.keys())[list(self.vertices.keys()).index(vertex):]:
+                print(vert.name)
                 if vert.name != vertex.name:
                     local_edge = Edge(vertex, vert)
                     for i in range(0, len(vertex.seq)):
                         if vertex.seq[i] != vert.seq[i]:
                             local_edge.subst.append(f"{vertex.seq[i]}{i+1}{vert.seq[i]}")
-                    if len(local_edge.subst) <= k:
-                        self.vertices[vertex].append([vert, local_edge])
+#                    if len(local_edge.subst) <= k:
+                    try:
+                        if len(local_edge.subst) < len(self.vertices[vertex][0][1].subst):
+                            self.vertices[vertex][0] = [vert, local_edge]
+                        elif len(local_edge.subst) == len(self.vertices[vertex][0][1].subst):
+                            self.vertices[vertex].append([vert, local_edge])
+                    except:
+                        self.vertices[vertex].append( [vert, local_edge])
+
 
     def component(self):
         vis = Digraph(comment='Cry toxin amino acid substitution graph')
         for i, j in self.vertices.items():
             vis.node(i.name, label=f"{i.name}")
             for item in j:
-               vis.edge(i.name, item[0].name, label = ", ".join(item[1].subst))
+                vis.edge(i.name, item[0].name, label = ", ".join(item[1].subst))
 
         vis.view()
         vis.save()
-
-
+        
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Cry toxin amino acid substitution graph')
-    parser.add_argument('-k', help='Maximal number of mismatches for adjacency', metavar='Int', type=int, default=1)
+        parser = argparse.ArgumentParser(description='Cry toxin amino acid substitution graph')
+        parser.add_argument('-k', help='Maximal number of mismatches for adjacency', metavar='Int', type=int, default=1)
         parser.add_argument('-p', help='add path to a file', metavar='Str', type=str)
-    args = parser.parse_args()
-    k = args.k
-    p = args.p
+        args = parser.parse_args()
 
-    my_graph = graph()
-    my_graph.add_vertex(f"{p}")
-    my_graph.adjacency_list(k)
-    my_graph.component()
+        p = args.p
+
+        my_graph = graph()
+        my_graph.add_vertex(f"{p}")
+        my_graph.adjacency_list()
+        my_graph.component()
