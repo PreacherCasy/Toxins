@@ -1,5 +1,4 @@
 from Bio import SeqIO
-from collections import defaultdict
 from graphviz import Digraph
 import argparse
 
@@ -7,7 +6,6 @@ class Vertex():
     def __init__(self, name, seq):
         self.name = name
         self.seq = seq
-        self.in_edges = dict()
         self.out_edges = dict()
         self.baseline = 0
 
@@ -39,23 +37,16 @@ class graph():
     def adjacency_list(self):
         for vertex in self.vertices:
             for vert in self.vertices:
-                if vert.name != vertex.name  and self.acyclic(vert, vertex) != False and vertex not in vert.out_edges.keys():
+                if vert.name != vertex.name and self.acyclic(vertex, vert) is True and vertex not in vert.out_edges.keys():
                     local_edge = Edge(vertex, vert)
                     for i in range(0, len(vertex.seq)):
                         if vertex.seq[i] != vert.seq[i]:
                             local_edge.subst.append(f"{vertex.seq[i]}{i+1}{vert.seq[i]}")
                     if len(local_edge.subst) < vertex.baseline:
                         vertex.out_edges.clear()
-                        vertex.out_edges[vert] = local_edge
-                        vertex.baseline = len(local_edge.subst)
-                        vert.in_edges.clear()
-                        vert.in_edges[vertex] = local_edge
+                        vertex.out_edges[vert], vertex.baseline = local_edge, len(local_edge.subst)
                     elif len(local_edge.subst) == vertex.baseline or vertex.baseline == 0:
-                        vertex.out_edges[vert] = local_edge
-                        vertex.baseline = len(local_edge.subst)
-                        vert.in_edges[vertex] = local_edge
-
-    def visualize(self):
+                        vertex.out_edges[vert], vertex.baseline = local_edge, len(local_edge.subst)    def visualize(self):
         vis = Digraph(comment='Cry toxin amino acid substitution graph', strict=True)
         for i in self.vertices:
             vis.node(i.name, label=f"{i.name}")
