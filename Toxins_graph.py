@@ -18,26 +18,39 @@ class Edge():
 class graph():
     def __init__(self):
         self.vertices = list()
-        self.outer_set = set()
-        self.edges = set()
+        self.adj_list = dict()
 
     def add_vertex(self, file):
         for record in SeqIO.parse(file, 'fasta'):
             self.vertices.append(Vertex(record.id, str(record.seq)))
 
-    def acyclic(self, node1, node2):
-        self.outer_set.add(node2)
-        if node1 in node2.out_edges:
+
+    def find_path(self, start, end, path):
+        try:
+            path = path + [start]
+            if start == end:
+                return True
+            for node in self.adj_list[start]:
+                if node not in path:
+                    newpath = self.find_path(node, end, path)
+                    if newpath: return True
+            return False
+        except:
+            return False
+
+    def checker(self, start, end, path):
+        if self.find_path(start, end, path) == True:
             return False
         else:
-            for i in node2.out_edges.keys():
-                if i not in self.outer_set:
-                    self.acyclic(node1, i)
+            return True
+
+
 
     def adjacency_list(self):
         for vertex in self.vertices:
+            self.adj_list[vertex] = list()
             for vert in self.vertices:
-                if vert.name != vertex.name and self.acyclic(vertex, vert) is True and vertex not in vert.out_edges.keys():
+                if vert.name != vertex.name and self.checker(vert, vertex, path = []) is True and vertex not in vert.out_edges.keys():
                     local_edge = Edge(vertex, vert)
                     for i in range(0, len(vertex.seq)):
                         if vertex.seq[i] != vert.seq[i]:
@@ -45,8 +58,14 @@ class graph():
                     if len(local_edge.subst) < vertex.baseline:
                         vertex.out_edges.clear()
                         vertex.out_edges[vert], vertex.baseline = local_edge, len(local_edge.subst)
+                        self.adj_list[vertex].clear()
+                        self.adj_list[vertex].append(vert)
                     elif len(local_edge.subst) == vertex.baseline or vertex.baseline == 0:
-                        vertex.out_edges[vert], vertex.baseline = local_edge, len(local_edge.subst)    def visualize(self):
+                        vertex.out_edges[vert], vertex.baseline = local_edge, len(local_edge.subst)
+                        self.adj_list[vertex].append(vert)
+        print(self.adj_list)
+
+    def visualize(self):
         vis = Digraph(comment='Cry toxin amino acid substitution graph', strict=True)
         for i in self.vertices:
             vis.node(i.name, label=f"{i.name}")
@@ -55,16 +74,8 @@ class graph():
 
         vis.view()
         vis.save()
-        
-if __name__ == '__main__':
-        parser = argparse.ArgumentParser(description='Cry toxin amino acid substitution graph')
-        parser.add_argument('-k', help='Maximal number of mismatches for adjacency', metavar='Int', type=int, default=1)
-        parser.add_argument('-p', help='add path to a file', metavar='Str', type=str)
-        args = parser.parse_args()
 
-        p = args.p
-
-        my_graph = graph()
-        my_graph.add_vertex(f"{p}")
-        my_graph.adjacency_list()
-        my_graph.component()
+my_graph = graph()
+my_graph.add_vertex('/home/reverend_casy/toy_set.fasta')
+my_graph.adjacency_list()
+my_graph.visualize()
