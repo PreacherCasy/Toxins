@@ -1,29 +1,30 @@
 from Bio import SeqIO
+from Bio.Phylo.TreeConstruction import DistanceCalculator
+from Bio import AlignIO
 import numpy as np
 from scipy.sparse.csgraph import connected_components as cc
 from graphviz import Graph
 import argparse
+import os
 import subprocess
 
 class graph():
-    def __init__(self, distances, alignment):
-        self.distances = distances
+    def __init__(self, alignment):
         self.alignment = alignment
-        self.adj_matrix = np.triu(np.full((11,11), 1), 1)
+        self.distmat = np.triu(DistanceCalculator('identity').get_distance(AlignIO.read(open(alignment), 'fasta')),1)
+        self.adj_matrix = np.triu(np.full((len(AlignIO.read(open(alignment), 'fasta')), len(AlignIO.read(open(alignment),
+                                                                                                'fasta'))), 1), 1)
         self.vertices = dict()
-        self.edges = list()
-        self.distmat = np.zeros((11, 11))
 
-
-    def populate_distances(self):
-        filling_list = []
-        with open(self.distances) as handle:
-            for line in handle:
-                line = list(map(float, filter(None, line.replace('\t', ' ').replace('\n', ' ').split(' '))))
-                filling_list.append(line)
-        for i in range(0, len(filling_list)):
-            for j in range(0, len(filling_list[i])):
-                self.distmat[i, -j] = filling_list[i][-j]
+    def edge_cutter(self):
+        if np.count_nonzero(self.distmat) > 0:
+            i, j = np.argwhere(self.distmat == np.amax(self.distmat))[0][0], np.argwhere(self.distmat
+                                                                                     == np.amax(self.distmat))[0][1]
+            self.adj_matrix[i][j] = 0
+            if cc(self.adj_matrix)[0] != 1:
+                self.adj_matrix[i][j] = 1
+            self.distmat[i][j] = 0
+            self.edge_cutter()
 
     def edge_cutter(self):
         if np.count_nonzero(self.distmat) > 0:
@@ -69,17 +70,12 @@ if __name__ == '__main__':
                         type=str, required=True)
     parser.add_argument('-ao', help='Name/path to your alignment file', metavar='File',
                         type=str, required=True)
-    parser.add_argument('-d', help='Name/path to your distance matrix file', metavar='File',
-                        type=str, required=True)
-    # parser.add_argument('-ms', help='MAFFT settings',
-    #                     type=str, required=False, default=None)
     parser.set_defaults(feature=True)
 
     args = parser.parse_args()
-    d, ai, ao = args.d, args.ai, args.ao
+    ai, ao = args.ai, args.ao
 
     subprocess.call(f"mafft {ai} > {ao}", shell=True)
-    g = graph(d, ao)
-    g.populate_distances()
+    g = graph(ao)
     g.edge_cutter()
     g.visualize()
