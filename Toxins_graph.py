@@ -5,7 +5,6 @@ import numpy as np
 from scipy.sparse.csgraph import connected_components as cc
 from graphviz import Graph
 import argparse
-import os
 import subprocess
 
 class graph():
