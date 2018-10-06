@@ -18,16 +18,6 @@ class graph():
     def edge_cutter(self):
         if np.count_nonzero(self.distmat) > 0:
             i, j = np.argwhere(self.distmat == np.amax(self.distmat))[0][0], np.argwhere(self.distmat
-                                                                                     == np.amax(self.distmat))[0][1]
-            self.adj_matrix[i][j] = 0
-            if cc(self.adj_matrix)[0] != 1:
-                self.adj_matrix[i][j] = 1
-            self.distmat[i][j] = 0
-            self.edge_cutter()
-
-    def edge_cutter(self):
-        if np.count_nonzero(self.distmat) > 0:
-            i, j = np.argwhere(self.distmat == np.amax(self.distmat))[0][0], np.argwhere(self.distmat
                                                                                              == np.amax(self.distmat))[0][1]
             self.adj_matrix[i][j] = 0
             if cc(self.adj_matrix)[0] != 1:
