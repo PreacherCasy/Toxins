@@ -1,4 +1,3 @@
-from Bio import SeqIO
 from Bio import AlignIO
 import numpy as np
 from collections import defaultdict
@@ -9,11 +8,12 @@ import subprocess
 
 class AAGraph():
     def __init__(self, alignment):
-        self.alignment = alignment
-        self.al = AlignIO.read(open(self.alignment), 'fasta')
-        self.adjMat = np.triu(np.full((len(AlignIO.read(open(alignment), 'fasta')), len(AlignIO.read(open(alignment), 'fasta'))), 1))
+        self.alignment = open(alignment)
+        self.al = AlignIO.read(self.alignment, 'fasta')
+        self.adjMat = np.triu(np.full((len(self.al), len(self.al)), 1))
         np.fill_diagonal(self.adjMat, 0)
-        self.distMat = np.zeros((len(AlignIO.read(open(alignment), 'fasta')), len(AlignIO.read(open(alignment), 'fasta'))))
+        self.distMat = np.zeros((len(self.al), len(self.al)))
+        self.alignment.close()
         self.vertices = list()
         self.edges = defaultdict(list)
 
@@ -53,9 +53,23 @@ class AAGraph():
                     item = (i, self.vertices[end])
                     vis.edge(i, self.vertices[end], label=", ".join(self.edges[item]))
         vis.view()
+        vis.save()
 
-dum = AAGraph('/home/reverend_casy/Bt_toxins/toy_set_aligned.fasta')
-dum.upload_vertices()
-dum.matBuild()
-dum.TR()
-dum.visualize()
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='graph_viualization')
+    parser.add_argument('-ai', help='Name/path of your fasta file', metavar='File',
+                        type=str, required=True)
+    parser.add_argument('-alg', help='Preferred aligner name and/or absolute path', metavar='Program',
+                        type=str, required=True)
+    parser.add_argument('-ao', help='Name/path to your alignment file', metavar='File',
+                        type=str, required=True)
+    parser.set_defaults(feature=True)
+
+    args = parser.parse_args()
+    ai, alg, ao = args.ai, args.alg, args.ao
+    subprocess.run(f"{alg} --quiet {ai} > {ao}", shell=True)
+    g = AAGraph(ao)
+    g.upload_vertices()
+    g.matBuild()
+    g.TR()
+    g.visualize()
