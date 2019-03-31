@@ -184,8 +184,7 @@ if __name__ == '__main__':
                         type=int, required=True)
     parser.add_argument('-f', help='Ending index of substring to be converted into vertex', metavar='Ending index',
                         type=int, required=True)
-    parser.add_argument('-ng', help='Defines the non-gapped subgraph mode', metavar='Non-gapping mode trigger',
-                        type=str, required=False, action='store_false')
+    parser.add_argument('-ng', help='Defines the non-gapped subgraph mode', required=False, action='store_true')
     parser.add_argument('-r', help='Root vertex for non-gapped graph reconstruction', metavar='Non-gapped mode root',
                         type=str, required=False)
     parser.add_argument('-thr', help='Maximum number of gaps allowed to maintain an edge in non-gapped graph',
