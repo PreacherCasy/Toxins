@@ -75,6 +75,10 @@ class AAGraph:
         self.filtered_edges = list()
 
     def upload_vertices(self, start, stop, entry_name):
+        if not start:
+            start = 0
+         if not stop:
+            stop = len(self.al[0].seq)
         indices = []
         for entry in self.al:
             if entry.id == entry_name:
@@ -188,7 +192,7 @@ if __name__ == '__main__':
     parser.add_argument('-r', help='Root vertex for non-gapped graph reconstruction', metavar='Non-gapped mode root',
                         type=str, required=False)
     parser.add_argument('-thr', help='Maximum number of gaps allowed to maintain an edge in non-gapped graph',
-                        metavar='Non-gapped mode indel threshold', type=int, required=False)
+                        metavar='Non-gapped mode indel threshold', nargs='?', type=int, required=False)
     parser.add_argument('-csv', help='Path to the csv file', metavar='csv path',
                         type=str, required=False)
     parser.add_argument('-gv', help='Path to the dot file', metavar='dot path',
@@ -199,12 +203,16 @@ if __name__ == '__main__':
     ai, ao, n, s, f, ng, r, thr, csv, gv = args.ai, args.ao, args.n, args.s, \
                                            args.f, args.ng, args.r, args.thr, args.csv, args.gv
 
-    subprocess.call(f"mafft {ai} > {ao}", shell=True)
+    subprocess.call(f"mafft --quiet {ai} > {ao}", shell=True)
     g = AAGraph(ao)
     g.upload_vertices(s, f, n)
     g.matBuild()
+    g.TR()
     if ng:
-        g.non_gapped(r, thr)
+        if thr:
+            g.non_gapped(r, thr)
+        else:
+            g.non_gapped(r)
     if csv:
         g.export(csv)
     if gv:
