@@ -130,16 +130,18 @@ class AAGraph:
         self.edges = list()
         self.filtered_edges = list()
 
-    def upload_vertices(self, entry_name, start=None, stop=None):
+    def upload_vertices(self, entry_name=None, start=None, stop=None):
         if not start:
             start = 0
         if not stop:
             stop = len(self.al[0].seq)
+        if not entry_name:
+            entry_name = self.al[0].id
         indices = []
         for entry in self.al:
             if entry.id == entry_name:
                 query = str(entry.seq).replace('-', '')[start:stop]
-                for i in range(1, len(str(entry.seq))):
+                for i in range(0, len(str(entry.seq)) + 1):
                     if str(entry.seq)[i] != '-':
                         for j in range(i, len(str(entry.seq))):
                             if str(entry.seq)[i:j].replace('-', '') == query:
@@ -243,8 +245,8 @@ if __name__ == '__main__':
                         type=str, required=True)
     parser.add_argument('-ao', help='Name/path to your alignment file', metavar='Alignment output',
                         type=str, required=True)
-    parser.add_argument('-n', help='Name of the defining sequence', metavar='Definin sequence',
-                        type=str, required=True)
+    parser.add_argument('-n', help='Name of the defining sequence', metavar='Defining sequence', nargs='?',
+                        type=str, required=False)
     parser.add_argument('-s', help='Starting index of substring to be converted into vertex', metavar='Starting index',
                         type=int, required=True)
     parser.add_argument('-f', help='Ending index of substring to be converted into vertex', metavar='Ending index',
