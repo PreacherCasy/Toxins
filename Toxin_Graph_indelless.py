@@ -5,6 +5,7 @@ from collections import defaultdict
 from graphviz import Graph
 from collections import deque
 import pandas as pd
+import re
 import subprocess
 import argparse
 from itertools import chain
